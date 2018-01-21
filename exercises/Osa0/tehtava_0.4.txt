@@ -1,0 +1,22 @@
+kayttaja->selain:
+note left of selain
+kayttaja kirjottaa kirjoittaa kirjoituskenttään
+ja painaa nappia "Talleta"
+end note
+selain->palvelin: POST fullstack-exampleapp.herokuapp.com/new_note
+note left of palvelin
+  palvelin tallentaa uuden muistiinpanon ja
+  lähettää selaimelle uudelleenohjauspyynnön
+end note
+palvelin->selain: status 302, uudelleenohjauspyyntö
+
+note left of selain
+ suoritus jatkuu aivan tehtävän 0.3 mukaisessa
+ järjestyksessä, sillä erolla että käytäjä ei
+ syötä osoitetta itse, vaan selain tekee
+ pyynnön itsenäisesti. Eli lataa sivun uudestaan
+ pyytäen HTML-koodin uudestaan, jonka jälkeen
+ sekä tyyli- että javascript-tiedostot ladataan
+ ja suoritetaan. Lopputulos on sama näkymä kuin
+ ennen lisäystä, uuden muistiinpanon kera
+end note

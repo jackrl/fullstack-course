@@ -32,7 +32,6 @@ class App extends React.Component {
     return this.state.votes.indexOf(Math.max.apply(null, this.state.votes))
   }
 
-  // conditional the plural
   render() {
     const Anecdote = (props) => {
       const {anecdotes, votes, anecdote} = props

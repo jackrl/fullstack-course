@@ -1,7 +1,6 @@
 import React from 'react'
 
 const NewPersonForm = (props) => {
-  console.log(props);  
   const {
     newName,
     newNumber,

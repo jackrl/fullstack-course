@@ -1,5 +1,5 @@
 import React from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 import FilterByName from './components/FilterByName'
 import NewPersonForm from './components/NewPersonForm'
@@ -18,25 +18,40 @@ class App extends React.Component {
 
   addPerson = (event) => {
     event.preventDefault()
-    if (this.state.persons.find(person => person.name === this.state.newName)) {
-      alert("Duplicate name!")
-      this.setState({
-        newName: '',
-        newNumber: ''  
-      })
+    const existingPerson = this.state.persons.find(person => person.name === this.state.newName)
+    if (existingPerson) {
+      if(window.confirm(`${existingPerson.name} on jo luettelossa, korvataanko vanha numero uudella?`)) {
+        const modifiedPerson = { ...existingPerson, number: this.state.newNumber}
+
+        personService
+          .update(existingPerson.id, modifiedPerson)
+          .then(modifiedPerson => {
+            const persons = this.state.persons
+              .filter(p => p.id !== existingPerson.id)
+              .concat(modifiedPerson)
+              .sort((p1, p2) => p1.id > p2.id)
+            this.setState({
+              persons,
+              newName: '',
+              newNumber: ''  
+            })
+          })
+      } 
     } else {
       const personObject = {
         name: this.state.newName,
         number: this.state.newNumber
       }
     
-      const persons = this.state.persons.concat(personObject)
-    
-      this.setState({
-        persons,
-        newName: '',
-        newNumber: ''
-      })
+      personService
+        .create(personObject)
+        .then(newPerson => {
+          this.setState({
+            persons: this.state.persons.concat(newPerson),
+            newName: '',
+            newNumber: ''
+          })
+        })
     }
   }
 
@@ -44,10 +59,24 @@ class App extends React.Component {
   handleNumberChange = (event) => this.setState({ newNumber: event.target.value })
   handleSearchFieldChange = (event) => this.setState({ searchField: event.target.value })
 
+  handlePersonRemoval = (id) => () => {
+    if(window.confirm(`poistetaanko ${this.state.persons.find(p => p.id === id).name}`)) {
+      personService
+        .remove(id)
+        .then((response) => {
+          this.setState({
+            persons: this.state.persons.filter(p => p.id !== id)
+          })
+        })
+    }
+  }
+
   componentWillMount() {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => this.setState({ persons: response.data }))
+    personService
+      .getAll()
+      .then(persons => {
+        this.setState({ persons })
+      })
   }
 
   render() {
@@ -74,7 +103,10 @@ class App extends React.Component {
         />
 
         <h2>Numerot</h2>
-        <PersonTable persons={personsToShow}/>
+        <PersonTable
+          persons={personsToShow}
+          handlePersonRemoval={this.handlePersonRemoval}
+        />
       </div>
     )
   }

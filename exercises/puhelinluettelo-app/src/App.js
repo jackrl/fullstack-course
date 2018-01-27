@@ -4,6 +4,7 @@ import personService from './services/persons'
 import FilterByName from './components/FilterByName'
 import NewPersonForm from './components/NewPersonForm'
 import PersonTable from './components/PersonTable'
+import Notification from './components/Notification'
 
 class App extends React.Component {
   constructor(props) {
@@ -12,7 +13,9 @@ class App extends React.Component {
       persons: [],
       newName: '',
       newNumber: '',
-      searchField: ''
+      searchField: '',
+      notificationType: '',
+      notificationMessage: null
     }
   }
 
@@ -33,8 +36,29 @@ class App extends React.Component {
             this.setState({
               persons,
               newName: '',
-              newNumber: ''  
+              newNumber: '',
+              notificationType: 'success',
+              notificationMessage: `muutettiin numero ${modifiedPerson.name}` 
             })
+            setTimeout(() => {
+              this.setState({
+                notificationType: '',
+                notificationMessage: null
+              })
+            }, 5000)
+          })
+          .catch(error => {
+            this.setState({
+              persons: this.state.persons.filter(p => p.id !== existingPerson.id),
+              notificationType: 'error',
+              notificationMessage: `${existingPerson.name} ei ole enää tietokannassa, joten sitä ei voitu muuttaa! Paina 'lisää' jos haluat lisätä sen uudestaan` 
+            })
+            setTimeout(() => {
+              this.setState({
+                notificationType: '',
+                notificationMessage: null
+              })
+            }, 5000)
           })
       } 
     } else {
@@ -49,8 +73,16 @@ class App extends React.Component {
           this.setState({
             persons: this.state.persons.concat(newPerson),
             newName: '',
-            newNumber: ''
+            newNumber: '',
+            notificationType: 'success',
+            notificationMessage: `lisättiin ${newPerson.name}`
           })
+          setTimeout(() => {
+            this.setState({
+              notificationType: '',
+              notificationMessage: null
+            })
+          }, 5000)
         })
     }
   }
@@ -65,9 +97,17 @@ class App extends React.Component {
         .remove(id)
         .then((response) => {
           this.setState({
-            persons: this.state.persons.filter(p => p.id !== id)
+            persons: this.state.persons.filter(p => p.id !== id),
+            notificationType: 'success',
+            notificationMessage: `poistettiin ${this.state.persons.find(p => p.id === id).name}`
           })
         })
+        setTimeout(() => {
+          this.setState({
+            notificationType: '',
+            notificationMessage: null
+          })
+        }, 5000)
     }
   }
 
@@ -88,12 +128,18 @@ class App extends React.Component {
     return (
       <div>
         <h2>Puhelinluettelo</h2>
+
+        <Notification 
+          type={this.state.notificationType}
+          message={this.state.notificationMessage}
+        />
+
         <FilterByName
           searchField={this.state.searchField}
           handleSearchFieldChange={this.handleSearchFieldChange}
         />
 
-        <h2>Lisää uusi</h2>
+        <h2>Lisää uusi / muuta olemassaolevan numeroa</h2>
         <NewPersonForm 
           newName={this.state.newName}
           newNumber={this.state.newNumber}
